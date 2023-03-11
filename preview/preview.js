@@ -3,42 +3,52 @@
     const iframe = document.getElementById('preview');
     const favicon = document.getElementById('favicon');
     const previewChannel = new BroadcastChannel('prev');
-    let prevDomHtml;
+    let prevDocument;
     let prevDomBody;
     let prevBodyFrame;
     let directory;
-    previewChannel.addEventListener('message', async msg => {
+    previewChannel.addEventListener('message', msg => {
         if (typeof msg.data === 'string') {
-            const domP = new DOMParser();
-            const newDocument = domP.parseFromString(msg.data, 'text/html');
-            const newAll = newDocument.getElementsByTagName('*');
-            for (const iterator of newAll) {
-                if (iterator.hasAttribute('src')) {
-                    const attr = iterator.getAttribute('src');
-                    iterator.setAttribute('src', await pathToUrl(attr));
-                }
-                if (iterator.hasAttribute('href')) {
-                    const attr = iterator.getAttribute('href');
-                    iterator.setAttribute('href', await pathToUrl(attr));
-                }
-            }
-            const newDomHtml = newDocument.body.parentElement;
-            const newDomBody = newDocument.body;
-            const newBodyFrame = newDomHtml.outerHTML.replace(newDomBody.innerHTML, '');
-            if (prevDomHtml &&
-                prevBodyFrame === newBodyFrame &&
-                iframe.contentDocument) {
-                iframe.contentDocument.body.innerHTML = newDomBody.innerHTML;
-            } else {
-                setIframe(newDocument);
-            }
-            prevDomHtml = newDomHtml;
-            prevDomBody = newDomBody;
-            prevBodyFrame = newBodyFrame;
+            viewHtml(msg.data);
         } else if (typeof msg.data === 'object') {
             directory = msg.data;
+            if (prevDocument) {
+                const xmlS = new XMLSerializer();
+                const html = xmlS.serializeToString(prevDocument).replace('<html xmlns="http://www.w3.org/1999/xhtml"', '<html');
+                viewHtml(html);
+            }
         }
     });
+
+    async function viewHtml(html) {
+        const domP = new DOMParser();
+        const newDocument = domP.parseFromString(html, 'text/html');
+        const newAll = newDocument.getElementsByTagName('*');
+        for (const iterator of newAll) {
+            if (iterator.hasAttribute('src')) {
+                const attr = iterator.getAttribute('src');
+                iterator.setAttribute('src', await pathToUrl(attr));
+            }
+            if (iterator.hasAttribute('href')) {
+                const attr = iterator.getAttribute('href');
+                iterator.setAttribute('href', await pathToUrl(attr));
+            }
+        }
+        const newDomHtml = newDocument.body.parentElement;
+        const newDomBody = newDocument.body;
+        const newBodyFrame = newDomHtml.outerHTML.replace(newDomBody.innerHTML, '');
+        if (prevDocument &&
+            prevBodyFrame === newBodyFrame &&
+            iframe.contentDocument) {
+            iframe.contentDocument.body.innerHTML = newDomBody.innerHTML;
+        } else {
+            setIframe(newDocument);
+        }
+        prevDocument = newDocument;
+        prevDomBody = newDomBody;
+        prevBodyFrame = newBodyFrame;
+    }
+
     function setIframe(newDocument) {
         const xmlS = new XMLSerializer();
         const html = xmlS.serializeToString(newDocument).replace('<html xmlns="http://www.w3.org/1999/xhtml"', '<html');
@@ -53,6 +63,7 @@
             }
         });
     }
+
     async function pathToUrl(path) {
         let result = path;
         if (path.match(/^.*:\//)) return result;
@@ -82,6 +93,7 @@
         }
         return result;
     }
+
     async function dirFind(dire, name, isdir) {
         for await (const entry of dire) {
             if (isdir) {
@@ -92,5 +104,6 @@
         }
         return false;
     }
+
     window.onload = () => previewChannel.postMessage('');
 })();
