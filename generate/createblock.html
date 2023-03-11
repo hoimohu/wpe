@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>createblock</title>
+    <script src="createblockobject.js"></script>
+    <script src="createmsg.js"></script>
+    <style>
+        #nameinput,
+        #generate {
+            width: 90vw;
+            height: 50px;
+        }
+
+        #output {
+            width: 90vw;
+            height: 70vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <label><input type="checkbox" id="isattr" title="isattr">isattr</label>
+        <label><input type="checkbox" id="nochild" title="nochild">nochild</label>
+        <label><input type="checkbox" id="noattr" title="noattr">noattr</label>
+        <label><input type="checkbox" id="msgmode" title="msgmode">msgmode</label>
+    </div>
+    <div>
+        <input type="text" id="nameinput" placeholder="nameinput">
+    </div>
+    <div>
+        <button type="button" id="generate">generate</button>
+    </div>
+    <div>
+        <textarea id="output" placeholder="output"></textarea>
+    </div>
+    <script>
+        const isattr = document.getElementById('isattr');
+        const nameinput = document.getElementById('nameinput');
+        const nochild = document.getElementById('nochild');
+        const noattr = document.getElementById('noattr');
+        const msgmode = document.getElementById('msgmode');
+        const generate = document.getElementById('generate');
+        const output = document.getElementById('output');
+        generate.addEventListener('click', generateCode);
+        nameinput.addEventListener('click', () => nameinput.select());
+        nameinput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') {
+                generateCode();
+                nameinput.blur();
+            }
+        });
+        function generateCode() {
+            if (msgmode.checked) {
+                output.value = createMsg(!isattr.checked, nameinput.value, !nochild.checked, !noattr.checked);
+            } else {
+                output.value = createBlockObject(!isattr.checked, nameinput.value, !nochild.checked, !noattr.checked);
+            }
+            navigator.clipboard.writeText(output.value);
+        }
+        function isOn(value) {
+            return value === 'on' ? true : false;
+        }
+    </script>
+</body>
+
+</html>
