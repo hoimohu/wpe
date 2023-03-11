@@ -409,12 +409,12 @@ function updatePreview(value) {
 function createPreviewIframe() {
     const iframe = document.createElement('iframe');
     iframe.id = 'preview';
-    iframe.src = 'preview';
+    iframe.src = 'preview/index.html';
     return iframe;
 }
 
 function createPreviewWindow() {
-    window.open('preview');
+    window.open('preview/index.html');
 }
 
 function timeout(time) {
