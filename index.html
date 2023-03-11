@@ -13,6 +13,13 @@
     <script src="dist/app.js"></script>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/vnd.microsoft.icon">
+    <link rel="apple-touch-icon" sizes="128x128" href="128.png">
+    <link rel="manifest" href="manifest.webmanifest">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        };
+    </script>
 </head>
 
 <body>
